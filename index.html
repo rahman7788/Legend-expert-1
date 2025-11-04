@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Legend Expert</title>
+    <style>
+        :root {
+            --primary-color: #00ff9d; /* Default advanced color */
+            --background-color: #111;
+            --text-color: #eee;
+            --sidebar-bg: #222;
+        }
+
+        body {
+            margin: 0;
+            /* Add padding at the bottom to avoid player overlap */
+            padding: 0 0 80px 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* Animated Lines Background */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(
+                135deg,
+                var(--primary-color),
+                #ff00c3,
+                #00e1ff,
+                #ff9a00
+            );
+            background-size: 600% 600%;
+            animation: gradientAnimation 10s ease infinite;
+            filter: blur(5px) opacity(0.6);
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Main Content Area */
+        .content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Use min-height */
+            text-align: center;
+            padding: 20px;
+            z-index: 2;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: #fff;
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 0, 0, 0.7);
+            margin-bottom: 40px;
+        }
+
+        /* Hamburger Menu Icon */
+        .menu-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 30px;
+            height: 3px;
+            background-color: var(--primary-color);
+            margin: 6px 0;
+            transition: 0.4s;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px; /* Hidden by default */
+            width: 250px;
+            height: 100%;
+            background-color: var(--sidebar-bg);
+            padding: 80px 15px 20px;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+            border-right: 1px solid var(--primary-color);
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar h3 {
+            color: var(--primary-color);
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li a {
+            display: block;
+            padding: 12px 10px;
+            color: var(--text-color);
+            text-decoration: none;
+            font-size: 1.1rem;
+            border-radius: 5px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: var(--primary-color);
+            color: #111;
+        }
+
+        /* Color Changer */
+        .color-changer {
+            margin-top: 30px;
+        }
+        .color-changer label {
+            font-size: 0.9rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .color-changer input[type="color"] {
+            width: 100%;
+            height: 40px;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        
+        /* Button Container */
+        .button-container {
+            display: flex;
+            flex-wrap: wrap; /* Buttons stack on small screens */
+            justify-content: center;
+            gap: 20px; /* Space between buttons */
+        }
+
+        /* General Button Style */
+        .action-button {
+            display: inline-block;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+
+        /* WhatsApp Button */
+        .whatsapp-button {
+            background-color: #25D366;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+        }
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+        }
+
+        /* Play Store Button */
+        .playstore-button {
+            background-color: #4A90E2; /* Google Play blue/grey */
+            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+        }
+        .playstore-button:hover {
+            background-color: #357ABD;
+        }
+
+
+        /* Audio Player (Bottom Bar) */
+        .audio-player {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--sidebar-bg);
+            padding: 15px;
+            z-index: 100;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
+            border-top: 1px solid var(--primary-color);
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+        }
+        
+        .audio-player audio {
+            width: 100%;
+            max-width: 800px; /* Max width on large screens */
+            display: block;
+            margin: 0 auto; /* Center the player in the bar */
+            height: 40px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <button class="menu-toggle" id="menuToggle">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
+    <nav class="sidebar" id="sidebar">
+        <h3>Demo Tools</h3>
+        <ul>
+            <li><a href="#">Text to Image</a></li>
+            <li><a href="#">Video Downloader</a></li>
+            <li><a href="#">Password Generator</a></li>
+        </ul>
+
+        <div class="color-changer">
+            <label for="colorPicker">Theme Color Changer</label>
+            <input type="color" id="colorPicker" value="#00ff9d">
+        </div>
+    </nav>
+
+    <div class="content">
+        <h1>Welcome to Legend Expert</h1>
+        
+        <div class="button-container">
+            <a href="https://chat.whatsapp.com/CkMDtjbJCp3DZYSEy7arsp?mode=wwt" target="_blank" class="action-button whatsapp-button">
+                Join on WhatsApp
+            </a>
+            
+            <a href="#" target="_blank" class="action-button playstore-button">
+                Pagal play stop
+            </a>
+        </div>
+    </div>
+
+    <div class="audio-player">
+        <audio controls autoplay loop>
+            <source src="VID-20251104-WA0015.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const colorPicker = document.getElementById('colorPicker');
+
+        // Toggle sidebar
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Advanced Color Changer
+        colorPicker.addEventListener('input', (e) => {
+            document.documentElement.style.setProperty('--primary-color', e.target.value);
+        });
+    </script>
+
+</body>
+</html>
