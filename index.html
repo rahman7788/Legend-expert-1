@@ -10,16 +10,16 @@
             --background-color: #111;
             --text-color: #eee;
             --sidebar-bg: #222;
+            --dashboard-bg: rgba(25, 25, 25, 0.6); /* Semi-transparent dashboard */
         }
 
         body {
             margin: 0;
-            /* Add padding at the bottom to avoid player overlap */
-            padding: 0 0 80px 0; 
+            padding: 0 0 80px 0; /* Bottom padding for player */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--background-color);
             color: var(--text-color);
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
             position: relative;
             min-height: 100vh;
         }
@@ -57,17 +57,66 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh; /* Use min-height */
+            min-height: 100vh;
             text-align: center;
             padding: 20px;
             z-index: 2;
+            box-sizing: border-box;
+        }
+
+        /* Dashboard Box */
+        .dashboard-box {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--dashboard-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--primary-color);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-sizing: border-box;
+        }
+
+        /* Search Bar */
+        .search-container {
+            display: flex;
+            width: 100%;
+            margin-bottom: 30px;
+            border-radius: 25px;
+            overflow: hidden;
+            border: 1px solid #444;
+        }
+        .search-container input[type="text"] {
+            flex-grow: 1;
+            border: none;
+            background-color: #333;
+            color: var(--text-color);
+            padding: 12px 20px;
+            font-size: 1rem;
+        }
+        .search-container input[type="text"]:focus {
+            outline: none;
+            background-color: #444;
+        }
+        .search-container button {
+            border: none;
+            background-color: var(--primary-color);
+            color: #111;
+            padding: 0 20px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .search-container button:hover {
+            background-color: #fff;
         }
 
         h1 {
-            font-size: 3.5rem;
+            font-size: 3rem; 
             color: #fff;
             text-shadow: 0 0 10px var(--primary-color), 0 0 20px rgba(0, 0, 0, 0.7);
-            margin-bottom: 40px;
+            margin-top: 0;
+            margin-bottom: 30px;
         }
 
         /* Hamburger Menu Icon */
@@ -81,7 +130,6 @@
             cursor: pointer;
             padding: 10px;
         }
-
         .menu-toggle span {
             display: block;
             width: 30px;
@@ -95,7 +143,7 @@
         .sidebar {
             position: fixed;
             top: 0;
-            left: -280px; /* Hidden by default */
+            left: -280px;
             width: 250px;
             height: 100%;
             background-color: var(--sidebar-bg);
@@ -105,23 +153,19 @@
             z-index: 1000;
             border-right: 1px solid var(--primary-color);
         }
-
         .sidebar.active {
             left: 0;
         }
-
         .sidebar h3 {
             color: var(--primary-color);
             border-bottom: 1px solid #444;
             padding-bottom: 10px;
         }
-
         .sidebar ul {
             list-style: none;
             padding: 0;
             margin: 0;
         }
-
         .sidebar ul li a {
             display: block;
             padding: 12px 10px;
@@ -131,7 +175,6 @@
             border-radius: 5px;
             transition: background-color 0.2s, color 0.2s;
         }
-
         .sidebar ul li a:hover {
             background-color: var(--primary-color);
             color: #111;
@@ -157,12 +200,10 @@
         /* Button Container */
         .button-container {
             display: flex;
-            flex-wrap: wrap; /* Buttons stack on small screens */
+            flex-wrap: wrap;
             justify-content: center;
-            gap: 20px; /* Space between buttons */
+            gap: 20px;
         }
-
-        /* General Button Style */
         .action-button {
             display: inline-block;
             color: #fff;
@@ -173,12 +214,9 @@
             border-radius: 50px;
             transition: transform 0.2s, background-color 0.2s;
         }
-        
         .action-button:hover {
             transform: scale(1.05);
         }
-
-        /* WhatsApp Button */
         .whatsapp-button {
             background-color: #25D366;
             box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
@@ -187,15 +225,16 @@
             background-color: #128C7E;
         }
 
-        /* Play Store Button */
-        .playstore-button {
-            background-color: #4A90E2; /* Google Play blue/grey */
-            box-shadow: 0 4px 15px rgba(74, 144, 226, 0.4);
+        /* Disclaimer Text */
+        .disclaimer-text {
+            width: 100%;
+            max-width: 800px;
+            margin: 30px auto 0;
+            font-size: 0.8rem;
+            color: #999;
+            line-height: 1.6;
+            text-align: center;
         }
-        .playstore-button:hover {
-            background-color: #357ABD;
-        }
-
 
         /* Audio Player (Bottom Bar) */
         .audio-player {
@@ -208,14 +247,13 @@
             z-index: 100;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
             border-top: 1px solid var(--primary-color);
-            box-sizing: border-box; /* Ensures padding doesn't break width */
+            box-sizing: border-box;
         }
-        
         .audio-player audio {
             width: 100%;
-            max-width: 800px; /* Max width on large screens */
+            max-width: 800px;
             display: block;
-            margin: 0 auto; /* Center the player in the bar */
+            margin: 0 auto;
             height: 40px;
         }
 
@@ -232,9 +270,9 @@
     <nav class="sidebar" id="sidebar">
         <h3>Demo Tools</h3>
         <ul>
-            <li><a href="#">Text to Image</a></li>
-            <li><a href="#">Video Downloader</a></li>
-            <li><a href="#">Password Generator</a></li>
+            <li><a href="#" class="demo-tool">Text to Image</a></li>
+            <li><a href="#" class="demo-tool">Video Downloader</a></li>
+            <li><a href="#" class="demo-tool">Password Generator</a></li>
         </ul>
 
         <div class="color-changer">
@@ -244,17 +282,27 @@
     </nav>
 
     <div class="content">
-        <h1>Welcome to Legend Expert</h1>
-        
-        <div class="button-container">
-            <a href="https://chat.whatsapp.com/CkMDtjbJCp3DZYSEy7arsp?mode=wwt" target="_blank" class="action-button whatsapp-button">
-                Join on WhatsApp
-            </a>
+
+        <div class="dashboard-box">
+
+            <div class="search-container">
+                <input type="text" placeholder="Search tools, features...">
+                <button type="submit">&#x1F50D;</button> </div>
+
+            <h1>Welcome to Legend Expert</h1>
             
-            <a href="#" target="_blank" class="action-button playstore-button">
-                Pagal play stop
-            </a>
+            <div class="button-container">
+                <a href="https://chat.whatsapp.com/CkMDtjbJCp3DZYSEy7arsp?mode=wwt" target="_blank" class="action-button whatsapp-button">
+                    Join on WhatsApp
+                </a>
+                
+                </div>
         </div>
+
+        <div class="disclaimer-text">
+            <p><strong>For Educational Purposes Only:</strong> All tools, information, and resources provided on "Legend Expert" are strictly for educational and demonstrational purposes. The services offered are intended to showcase capabilities and should not be used for any illicit, unethical, or commercial activities. The developers assume no liability for misuse of the information or tools provided. By using this website, you acknowledge and agree to these terms.</p>
+        </div>
+
     </div>
 
     <div class="audio-player">
@@ -276,8 +324,19 @@
 
         // Advanced Color Changer
         colorPicker.addEventListener('input', (e) => {
-            document.documentElement.style.setProperty('--primary-color', e.target.value);
+            document.documentElement.style.setProperty('--primary-color', e.targe.value);
         });
+
+        // "Coming Soon" Alert Script
+        const demoTools = document.querySelectorAll('.demo-tool');
+        
+        demoTools.forEach(tool => {
+            tool.addEventListener('click', (e) => {
+                e.preventDefault(); 
+                alert('Tool is coming soon!');
+            });
+        });
+
     </script>
 
 </body>
