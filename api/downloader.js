@@ -1,144 +1,47 @@
-import express from "express";
-import fetch from "node-fetch";
-import cors from "cors";
-import bodyParser from "body-parser";
-import ytdl from "@distube/ytdl-core"; // safer youtube library
+// api/downloader.js
+// Yeh Vercel serverless function hai jo video download karega
 
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-  res.send("✅ All-in-One Social Downloader API Running");
-});
-
-// ---------- TIKTOK (No Watermark) ----------
-app.post("/tiktok", async (req, res) => {
-  try {
-    const { url } = req.body;
-    if (!url) return res.json({ status: "error", message: "Missing URL" });
-
-    // public endpoint (safe educational use)
-    const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-
-    if (data.data && data.data.play) {
-      return res.json({
-        status: "success",
-        platform: "tiktok",
-        title: data.data.title,
-        thumbnail: data.data.cover,
-        noWatermark: data.data.play,
-        music: data.data.music,
-      });
-    } else {
-      return res.json({ status: "error", message: "No valid data" });
-    }
-  } catch (err) {
-    res.json({ status: "error", message: err.message });
-  }
-});
-
-// ---------- YOUTUBE ----------
-app.post("/youtube", async (req, res) => {
-  try {
-    const { url } = req.body;
-    if (!url) return res.json({ status: "error", message: "Missing URL" });
-
-    if (!ytdl.validateURL(url)) {
-      return res.json({ status: "error", message: "Invalid YouTube URL" });
+export default async function handler(req, res) {
+    // Sirf POST requests accept karega
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const info = await ytdl.getInfo(url);
-    const formats = ytdl.filterFormats(info.formats, "videoandaudio");
-    res.json({
-      status: "success",
-      platform: "youtube",
-      title: info.videoDetails.title,
-      thumbnail: info.videoDetails.thumbnails.pop().url,
-      formats: formats.map(f => ({
-        quality: f.qualityLabel,
-        mimeType: f.mimeType,
-        url: f.url,
-      })),
-    });
-  } catch (err) {
-    res.json({ status: "error", message: err.message });
-  }
-});
+    try {
+        const { url: videoUrl } = req.body;
 
-// ---------- INSTAGRAM ----------
-app.post("/instagram", async (req, res) => {
-  try {
-    const { url } = req.body;
-    if (!url) return res.json({ status: "error", message: "Missing URL" });
+        if (!videoUrl) {
+            return res.status(400).json({ error: 'URL is required' });
+        }
 
-    const api = `https://igram.world/api/ig/post?url=${encodeURIComponent(url)}`;
-    const r = await fetch(api);
-    const j = await r.json();
-    if (j && j.data && j.data.length > 0) {
-      return res.json({
-        status: "success",
-        platform: "instagram",
-        items: j.data.map(item => ({
-          type: item.type,
-          url: item.url,
-          thumbnail: item.thumbnail,
-        })),
-      });
-    } else {
-      return res.json({ status: "error", message: "No data found" });
+        // Hum Cobalt API ka istemal kar rahe hain (ek free, open-source service)
+        // Yeh API video URL ko process karke download link deti hai
+        const apiResponse = await fetch('https://co.wuk.sh/api/json', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                url: videoUrl,
+                vQuality: '720', // Video quality (720p)
+                isNoTTWatermark: true // TikTok se watermark hatane ki koshish karega
+            })
+        });
+
+        const data = await apiResponse.json();
+
+        // Check karein agar service ne error diya
+        if (data.status === 'error' || !data.url) {
+            return res.status(500).json({ error: data.text || 'Failed to get download link' });
+        }
+
+        // Agar sab sahi hai, toh download link wapas bhejein
+        // data.url mein download link hoga
+        return res.status(200).json({ downloadUrl: data.url });
+
+    } catch (error) {
+        console.error('Download API Error:', error);
+        return res.status(500).json({ error: 'Something went wrong on our side.' });
     }
-  } catch (err) {
-    res.json({ status: "error", message: err.message });
-  }
-});
-
-// ---------- FACEBOOK ----------
-app.post("/facebook", async (req, res) => {
-  try {
-    const { url } = req.body;
-    if (!url) return res.json({ status: "error", message: "Missing URL" });
-
-    // !!! IMPORTANT !!!
-    // Aapko "demo-key" ko apni real RapidAPI key se badalna hoga
-    // Yeh key https://rapidapi.com/feli-c-p-a-facebook-video-downloader-api/api/facebook-video-downloader-api
-    // se free mein mil jayegi.
-    const MY_RAPIDAPI_KEY = "demo-key"; // <--- YAHAN APNI KEY DAALEIN
-
-    if (MY_RAPIDAPI_KEY === "demo-key") {
-       return res.json({ status: "error", message: "Please add your RapidAPI Key in api/downloader.js file." });
-    }
-
-    const api = `https://facebook-video-downloader-api.p.rapidapi.com/facebook?url=${encodeURIComponent(url)}`;
-    const options = {
-      method: "GET",
-      headers: {
-        "X-RapidAPI-Key": MY_RAPIDAPI_KEY,
-        "X-RapidAPI-Host": "facebook-video-downloader-api.p.rapidapi.com",
-      },
-    };
-    const r = await fetch(api, options);
-    const data = await r.json();
-    res.json(data);
-  } catch (err) {
-    res.json({ status: "error", message: err.message });
-  }
-});
-
-// ---------- AUTO DETECT ----------
-app.post("/detect", async (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.json({ platform: "unknown" });
-
-  if (url.includes("tiktok.com")) return res.json({ platform: "tiktok" });
-  if (url.includes("youtube.com") || url.includes("youtu.be")) return res.json({ platform: "youtube" });
-  if (url.includes("instagram.com")) return res.json({ platform: "instagram" });
-  if (url.includes("facebook.com") || url.includes("fb.watch")) return res.json({ platform: "facebook" });
-  return res.json({ platform: "unknown" });
-});
-
-
-// Vercel isko serverless function ki tarah run karega
-export default app;
+}
