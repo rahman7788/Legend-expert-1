@@ -1,0 +1,17 @@
+{
+  "name": "legend-expert-tools",
+  "version": "1.0.0",
+  "description": "All-in-one tools",
+  "main": "index.html",
+  "type": "module",
+  "scripts": {
+    "start": "node api/downloader.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2",
+    "node-fetch": "^3.3.2",
+    "@distube/ytdl-core": "^4.13.5"
+  }
+}
