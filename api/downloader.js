@@ -2,7 +2,6 @@
 // Yeh Vercel serverless function hai jo video download karega
 
 export default async function handler(req, res) {
-    // Sirf POST requests accept karega
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
@@ -14,9 +13,10 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: 'URL is required' });
         }
 
-        // Hum Cobalt API ka istemal kar rahe hain (ek free, open-source service)
-        // Yeh API video URL ko process karke download link deti hai
-        const apiResponse = await fetch('https://co.wuk.sh/api/json', {
+        // ===== FIX YAHAN HAI =====
+        // Humne 'co.wuk.sh' ko badal kar official 'api.cobalt.tools' kar diya hai
+        // Yeh zyada reliable hai
+        const apiResponse = await fetch('https://api.cobalt.tools/api/json', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -32,12 +32,13 @@ export default async function handler(req, res) {
         const data = await apiResponse.json();
 
         // Check karein agar service ne error diya
+        // (Jaise "This platform is not supported")
         if (data.status === 'error' || !data.url) {
-            return res.status(500).json({ error: data.text || 'Failed to get download link' });
+            // Hum ab service ka original error message dikhayenge
+            return res.status(400).json({ error: data.text || 'Failed to get download link' });
         }
 
         // Agar sab sahi hai, toh download link wapas bhejein
-        // data.url mein download link hoga
         return res.status(200).json({ downloadUrl: data.url });
 
     } catch (error) {
