@@ -96,6 +96,41 @@
             background-color: #fff;
         }
 
+        /* --- NEW: Search Results Styling --- */
+        .search-results-container {
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 20px;
+        }
+        .search-result-item {
+            display: block;
+            padding: 10px 15px;
+            color: var(--text-color);
+            text-decoration: none;
+            background-color: rgba(51, 51, 51, 0.7);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: background-color 0.2s;
+        }
+        .search-result-item:hover {
+            background-color: var(--primary-color);
+            color: #111;
+        }
+        .search-result-item strong {
+            font-size: 0.95rem;
+        }
+        .search-result-item small {
+            display: block;
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+        .search-result-item:hover small {
+            color: #222;
+        }
+        /* --- End of Search Results Styling --- */
+
         h1 {
             font-family: 'Poppins', sans-serif;
             font-size: 2.2rem; /* Adjusted for smaller box */
@@ -244,7 +279,7 @@
             height: 40px;
         }
 
-        /* --- NEW: Tool Specific Styles --- */
+        /* --- Tool Specific Styles --- */
         .tool-content {
             text-align: left;
             width: 100%;
@@ -256,6 +291,7 @@
             font-size: 1.1rem;
             color: var(--primary-color);
         }
+        /* Style for textareas */
         .tool-content textarea {
             width: 100%;
             height: 100px;
@@ -266,6 +302,18 @@
             font-size: 0.95rem;
             border-radius: 8px;
             resize: vertical;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        /* --- NEW: Style for single-line inputs --- */
+        .tool-content input[type="text"] {
+            width: 100%;
+            background-color: #333;
+            border: 1px solid #444;
+            color: var(--text-color);
+            padding: 10px;
+            font-size: 0.95rem;
+            border-radius: 8px;
             margin-bottom: 15px;
             box-sizing: border-box;
         }
@@ -289,7 +337,6 @@
             padding-top: 20px;
             text-align: center;
         }
-        /* ===== MODIFICATION: Added Video styles ===== */
         .tool-result img,
         .tool-result video {
             max-width: 100%;
@@ -332,9 +379,10 @@
     <nav class="sidebar" id="sidebar">
         <h3>Demo Tools</h3>
         <ul>
+            <!-- MODIFICATION: Links updated to be functional -->
             <li><a href="#text-to-video" class="tool-link" data-tool="text-to-video">Text to Video</a></li>
-            <li><a href="#" class="demo-tool">Video Downloader</a></li>
-            <li><a href="#" class="demo-tool">Password Generator</a></li>
+            <li><a href="#downloader" class="tool-link" data-tool="downloader">Video Downloader</a></li>
+            <li><a href="#password-generator" class="tool-link" data-tool="password-generator">Password Generator</a></li>
         </ul>
 
         <div class="color-changer">
@@ -346,9 +394,10 @@
     <div class="content">
 
         <div class="dashboard-box" id="main-dashboard">
-            </div>
+            <!-- Content is loaded here by JavaScript -->
+        </div>
 
-        <div class="disclaimer-text">
+        <div classs="disclaimer-text">
             <p><strong>For Educational Purposes Only:</strong> All tools, information, and resources provided on "Legend Expert" are strictly for educational and demonstrational purposes. The services offered are intended to showcase capabilities and should not be used for any illicit, unethical, or commercial activities. The developers assume no liability for misuse of the information or tools provided. By using this website, you acknowledge and agree to these terms.</p>
         </div>
 
@@ -358,7 +407,7 @@
         <audio controls autoplay loop>
             <source src="VID-20251104-WA0015.mp3" type="audio/mpeg">
             Your browser does not support the audio element.
-        </f>
+        </audio>
     </div>
 
     <script>
@@ -366,6 +415,25 @@
         const sidebar = document.getElementById('sidebar');
         const colorPicker = document.getElementById('colorPicker');
         const mainDashboard = document.getElementById('main-dashboard');
+
+        // --- NEW: Tools Database for Search ---
+        const tools = [
+            { 
+                id: 'text-to-video', 
+                name: 'Text to Video', 
+                description: 'Convert text script to a video.' 
+            },
+            { 
+                id: 'downloader', 
+                name: 'All-in-One Downloader', 
+                description: 'Download videos from social media. (Demo)' 
+            },
+            { 
+                id: 'password-generator', 
+                name: 'Password Generator', 
+                description: 'Generate secure passwords. (Coming Soon)' 
+            }
+        ];
 
         // --- Sidebar & Color Changer ---
         menuToggle.addEventListener('click', () => {
@@ -376,22 +444,43 @@
             document.documentElement.style.setProperty('--primary-color', e.target.value);
         });
 
-        // --- "Coming Soon" Alert Script for specific demo tools ---
-        const demoTools = document.querySelectorAll('.demo-tool');
-        demoTools.forEach(tool => {
-            tool.addEventListener('click', (e) => {
-                e.preventDefault(); 
-                alert('Tool is coming soon!');
-            });
-        });
+        // --- MODIFICATION: "Coming Soon" script removed, logic is now in tool handler ---
 
-        // --- NEW: Dashboard Content Management ---
+        // --- Dashboard Content Management ---
+
+        // NEW: Search Handler Function
+        const handleSearch = () => {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const resultsContainer = document.getElementById('search-results');
+            
+            if (!query) {
+                resultsContainer.innerHTML = '';
+                return;
+            }
+            
+            const filteredTools = tools.filter(tool => 
+                tool.name.toLowerCase().includes(query) || 
+                tool.description.toLowerCase().includes(query)
+            );
+            
+            resultsContainer.innerHTML = filteredTools.map(tool => `
+                <a href="#${tool.id}" class="search-result-item" data-tool="${tool.id}">
+                    <strong>${tool.name}</strong>
+                    <small>${tool.description}</small>
+                </a>
+            `).join('');
+        };
+
         const loadHomePage = () => {
             mainDashboard.innerHTML = `
                 <div class="search-container">
-                    <input type="text" placeholder="Search tools, features...">
+                    <!-- MODIFICATION: Added id="search-input" -->
+                    <input type="text" id="search-input" placeholder="Search tools, features...">
                     <button type="submit">&#x1F50D;</button> 
                 </div>
+                <!-- NEW: Search results container -->
+                <div id="search-results" class="search-results-container"></div>
+
                 <h1>Welcome to Legend Expert Tools</h1>
                 <div class="button-container">
                     <a href="https://chat.whatsapp.com/CkMDtjbJCp3DZYSEy7arsp?mode=wwt" target="_blank" class="action-button whatsapp-button">
@@ -399,12 +488,11 @@
                     </a>
                 </div>
             `;
+            // Add listener to the new search bar
+            document.getElementById('search-input').addEventListener('input', handleSearch);
         };
         
-        // ===== REMOVED: Text to Image Tool Function =====
-        
-        
-        // ===== NEW: Text to Video Tool Function =====
+        // Text to Video Tool Function (Your existing function)
         const loadTextToVideoTool = () => {
             mainDashboard.innerHTML = `
                 <a href="#" class="back-to-home" onclick="loadHomePage(); return false;">&larr; Back to Home</a>
@@ -419,7 +507,6 @@
                 </div>
             `;
             
-            // Add event listener for the new button
             document.getElementById('generate-video-btn').addEventListener('click', async () => {
                 const prompt = document.getElementById('video-prompt').value.trim();
                 const output = document.getElementById('video-result');
@@ -459,146 +546,27 @@
                 }
             });
         };
-        // ===== END OF NEW FUNCTION =====
 
-        // Load home page initially
-        loadHomePage();
-
-        // Handle tool links
-        document.querySelectorAll('.tool-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                sidebar.classList.remove('active'); // Close sidebar after clicking
-                const tool = e.target.dataset.tool;
+        // ===== NEW: All-in-One Downloader Tool Function =====
+        const loadDownloaderTool = () => {
+            mainDashboard.innerHTML = `
+                <a href="#" class="back-to-home" onclick="loadHomePage(); return false;">&larr; Back to Home</a>
+                <h1>All-in-One Downloader</h1>
+                <div class="tool-content">
+                    <label for="downloader-url">Paste your video link:</label>
+                    <!-- Uses the new .tool-content input[type="text"] style -->
+                    <input type="text" id="downloader-url" placeholder="https://...">
+                    <button id="download-btn">Download</button>
+                    <div class="tool-result" id="downloader-result">
+                        <p>Your download link will appear here. (This is a demo)</p>
+                    </div>
+                </div>
+            `;
+            
+            // Add event listener for the new button
+            document.getElementById('download-btn').addEventListener('click', () => {
+                const url = document.getElementById('downloader-url').value.trim();
+                const output = document.getElementById('downloader-result');
                 
-                // ===== MODIFICATION: Removed text-to-image logic =====
-                if (tool === 'text-to-video') {
-                    loadTextToVideoTool();
-                }
-                // Add more tools here if needed
-            });
-        });
-
-        // --- Particle Network Background Script ---
-        const canvas = document.getElementById('particle-canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-
-        let particlesArray;
-
-        let mouse = {
-            x: null,
-            y: null,
-            radius: (canvas.height / 100) * (canvas.width / 100) // Adjusted mouse interaction radius
-        }
-
-        window.addEventListener('mousemove', 
-            function(event) {
-                mouse.x = event.x;
-                mouse.y = event.y;
-            }
-        );
-
-        class Particle {
-            constructor(x, y, directionX, directionY, size) {
-                this.x = x;
-                this.y = y;
-                this.directionX = directionX;
-                this.directionY = directionY;
-                this.size = size;
-            }
-
-            getColor() {
-                return getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-            }
-
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-                ctx.fillStyle = this.getColor();
-                ctx.fill();
-            }
-
-            update() {
-                if (this.x > canvas.width || this.x < 0) {
-                    this.directionX = -this.directionX;
-                }
-                if (this.y > canvas.height || this.y < 0) {
-                    this.directionY = -this.directionY;
-                }
-
-                this.x += this.directionX;
-                this.y += this.directionY;
-                this.draw();
-            }
-        }
-
-        function init() {
-            particlesArray = [];
-            let numberOfParticles = (canvas.height * canvas.width) / 12000; // Adjusted particle density
-            for (let i = 0; i < numberOfParticles; i++) {
-                let size = (Math.random() * 1.5) + 1;
-                let x = (Math.random() * ((canvas.width - size * 2) - (size * 2)) + size * 2);
-                let y = (Math.random() * ((canvas.height - size * 2) - (size * 2)) + size * 2);
-                let directionX = (Math.random() * 1.6) - 0.8; // Faster movement
-                let directionY = (Math.random() * 1.6) - 0.8; // Faster movement
-
-                particlesArray.push(new Particle(x, y, directionX, directionY, size));
-            }
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            const lineColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
-
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-            }
-            connect(lineColor);
-        }
-
-        function connect(lineColor) {
-            let opacityValue = 1;
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a; b < particlesArray.length; b++) {
-                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x))
-                        + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
-                    
-                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
-                        opacityValue = 1 - (distance / 20000);
-                        ctx.strokeStyle = `rgba(${parseInt(lineColor.slice(1, 3), 16)}, ${parseInt(lineColor.slice(3, 5), 16)}, ${parseInt(lineColor.slice(5, 7), 16)}, ${opacityValue})`;
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        window.addEventListener('resize', 
-            function() {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                mouse.radius = (canvas.height / 100) * (canvas.width / 100);
-                init();
-            }
-        );
-
-        window.addEventListener('mouseout', 
-            function() {
-                mouse.x = undefined;
-                mouse.y = undefined;
-            }
-        );
-
-        init();
-        animate();
-
-    </script>
-</body>
-</html>
+                if (!url) {
+                  output.innerHTML = "<p style='color:orange'>Please paste a URL first!</p>";
