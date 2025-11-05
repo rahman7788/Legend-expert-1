@@ -1,61 +1,104 @@
 // api/downloader.js
-// Yeh ek NAYI service ka istemal kar raha hai.
+// Yeh file aapke logic par based hai.
+// Yeh link ko detect karke alag-alag API call karegi.
 
+import ytdl from '@distube/ytdl-core';
+import fetch from 'node-fetch';
+
+// Helper function: TikTok (aapka logic)
+async function getTikTok(url) {
+    try {
+        const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (data.data && data.data.play) {
+            return { downloadUrl: data.data.play };
+        } else {
+            return { error: 'No valid TikTok data' };
+        }
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+// Helper function: YouTube (aapka logic)
+async function getYouTube(url) {
+    try {
+        if (!ytdl.validateURL(url)) {
+            return { error: 'Invalid YouTube URL' };
+        }
+        const info = await ytdl.getInfo(url);
+        const format = ytdl.filterFormats(info.formats, 'videoandaudio').find(f => f.qualityLabel === '720p' || f.qualityLabel === '480p');
+        
+        if (format) {
+            return { downloadUrl: format.url };
+        } else {
+            // Fallback: koi bhi video + audio waala format
+            const fallbackFormat = ytdl.filterFormats(info.formats, 'videoandaudio')[0];
+            if (fallbackFormat) {
+                return { downloadUrl: fallbackFormat.url };
+            }
+            return { error: 'No video+audio format found' };
+        }
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+// Helper function: Instagram (aapka logic)
+async function getInstagram(url) {
+    try {
+        const api = `https://igram.world/api/ig/post?url=${encodeURIComponent(url)}`;
+        const r = await fetch(api);
+        const j = await r.json();
+
+        if (j && j.data && j.data.length > 0) {
+            // Pehli video ya image ka link
+            return { downloadUrl: j.data[0].url };
+        } else {
+            return { error: 'No data found (igram)' };
+        }
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+
+// MAIN HANDLER
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
+    const { url } = req.body;
+    if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+    }
+
+    let result;
+
     try {
-        const { url: videoUrl } = req.body;
-        if (!videoUrl) {
-            return res.status(400).json({ error: 'URL is required' });
-        }
-
-        // ===== YAHAN HAI FINAL FIX =====
-        // Hum ek nayi external service 'api.download-video.net' ka istemal kar rahe hain
-        const apiResponse = await fetch('https://api.download-video.net/api/downloader', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                url: videoUrl
-            })
-        });
-
-        // Check karein agar API ne response hi nahi diya
-        if (!apiResponse.ok) {
-            const errorText = await apiResponse.text(); // Error text padhein
-            console.error('API Error Response:', errorText);
-            return res.status(apiResponse.status).json({ error: 'The download service failed to respond.' });
-        }
-        
-        const data = await apiResponse.json();
-
-        // Step 3: Check karein ki naye service ne link diya ya error
-        // 'data.data.medias' ek array hota hai video links ka
-        if (data.success && data.data && data.data.medias && data.data.medias.length > 0) {
-            
-            // Hum sabse pehla wala link utha rahe hain
-            // Yeh 'url' property dhoondhega
-            const downloadLink = data.data.medias[0].url;
-
-            if (downloadLink) {
-                 return res.status(200).json({ downloadUrl: downloadLink });
-            } else {
-                 return res.status(400).json({ error: 'API returned success but no download link found.' });
-            }
-           
+        // Step 1: Detect platform
+        if (url.includes("tiktok.com")) {
+            result = await getTikTok(url);
+        } else if (url.includes("youtube.com") || url.includes("youtu.be")) {
+            result = await getYouTube(url);
+        } else if (url.includes("instagram.com")) {
+            result = await getInstagram(url);
         } else {
-            // Agar koi error message aaya (jaise "Unsupported URL")
-            console.error('Service Error:', data);
-            return res.status(400).json({ error: data.message || 'This URL is not supported by the new service.' });
+            result = { error: 'This URL is not supported (unknown platform)' };
+        }
+
+        // Step 2: Send response
+        if (result.error) {
+            return res.status(400).json({ error: result.error });
+        } else {
+            return res.status(200).json({ downloadUrl: result.downloadUrl });
         }
 
     } catch (error) {
-        console.error('Download API Error:', error);
-        return res.status(500).json({ error: 'Something went wrong on our side (Catch Block).' });
+        console.error('Main Handler Error:', error);
+        return res.status(500).json({ error: 'Something went wrong on our side (Main Catch)' });
     }
 }
