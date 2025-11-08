@@ -1,9 +1,0 @@
-{
-  "name": "legend-expert-downloader",
-  "version": "1.0.0",
-  "description": "Handles downloading for Text-to-Video and Social Downloader",
-  "dependencies": {
-    "@distube/ytdl-core": "^2.1.7",
-    "node-fetch": "^3.3.2"
-  }
-}
